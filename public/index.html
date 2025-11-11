@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔥 League Roaster Bot - Get Roasted!</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Auth Modal -->
+    <div id="auth-modal" class="modal">
+        <div class="modal-content">
+            <h2>🎮 Register Your Account</h2>
+            <p>Enter your League of Legends Riot ID to get started</p>
+            <form id="auth-form" onsubmit="handleAuthSubmit(event)">
+                <div class="form-group">
+                    <label for="auth-game-name">Game Name:</label>
+                    <input type="text" id="auth-game-name" placeholder="e.g., PlayerName" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="auth-tag-line">Tag Line:</label>
+                    <input type="text" id="auth-tag-line" placeholder="e.g., NA1" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <span class="btn-text">Register & Save Locally</span>
+                    <span class="btn-loader" style="display: none;">⏳</span>
+                </button>
+            </form>
+
+            <p class="modal-note">💾 Your account will be saved locally on this device</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Navigation -->
+        <nav class="navbar">
+            <div class="nav-content">
+                <h1 class="logo">🔥 League Roaster</h1>
+                <div class="nav-links">
+                    <button class="nav-btn active" onclick="switchTab('roast')">Get Roasted</button>
+                    <button class="nav-btn" onclick="switchTab('analysis')">Analysis</button>
+                    <div id="auth-section" style="display: none;">
+                        <div id="user-info"></div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Status Messages -->
+            <div id="status-container"></div>
+
+            <!-- Roast Tab -->
+            <div id="roast-tab" class="tab active">
+                <div class="card">
+                    <h2>🔥 Get Roasted on Your Latest Match</h2>
+                    <form id="roast-form" onsubmit="handleRoast(event)">
+                        <button type="submit" class="btn btn-primary">
+                            <span class="btn-text">Get Roasted</span>
+                            <span class="btn-loader" style="display: none;">⏳</span>
+                        </button>
+                    </form>
+
+                    <div id="roast-result" class="result-container" style="display: none;">
+                        <div class="stats-card">
+                            <h3>📊 Match Stats</h3>
+                            <div class="stats-grid">
+                                <div class="stat-item">
+                                    <span class="stat-label">Champion</span>
+                                    <span class="stat-value" id="roast-champion">-</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Role</span>
+                                    <span class="stat-value" id="roast-role">-</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">K/D/A</span>
+                                    <span class="stat-value" id="roast-kda">-</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">KDA Ratio</span>
+                                    <span class="stat-value" id="roast-kda-ratio">-</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">CS</span>
+                                    <span class="stat-value" id="roast-cs">-</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Gold/Min</span>
+                                    <span class="stat-value" id="roast-gpm">-</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Damage</span>
+                                    <span class="stat-value" id="roast-damage">-</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Result</span>
+                                    <span class="stat-value" id="roast-win-loss">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="roast-box">
+                            <h3>🔥 Overview Roast:</h3>
+                            <p id="roast-overview"></p>
+                        </div>
+
+                        <div class="roast-box timeline" style="display: none;" id="timeline-roast-box">
+                            <h3>⏱️ Timeline Roast:</h3>
+                            <p id="roast-timeline"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analysis Tab -->
+            <div id="analysis-tab" class="tab">
+                <div class="card">
+                    <h2>📊 Detailed Match History Analysis</h2>
+                    <form id="analysis-form" onsubmit="handleAnalysis(event)">
+                        <div class="form-group">
+                            <label for="analysis-count">Number of Matches:</label>
+                            <input type="number" id="analysis-count" value="10" min="1" max="100">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <span class="btn-text">Analyze Matches</span>
+                            <span class="btn-loader" style="display: none;">⏳</span>
+                        </button>
+                    </form>
+
+                    <div id="analysis-result" class="result-container" style="display: none;">
+                        <div id="analysis-player-info" class="player-info"></div>
+
+                        <div class="stats-card">
+                            <h3>📈 Overall Statistics</h3>
+                            <div class="stats-grid">
+                                <div class="stat-item">
+                                    <span class="stat-label">Win Rate</span>
+                                    <span class="stat-value" id="analysis-wr">-</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Avg K/D/A</span>
+                                    <span class="stat-value" id="analysis-kda">-</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Avg KDA Ratio</span>
+                                    <span class="stat-value" id="analysis-kda-ratio">-</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Avg CS/min</span>
+                                    <span class="stat-value" id="analysis-cs">-</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Avg Gold/min</span>
+                                    <span class="stat-value" id="analysis-gpm">-</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Avg Damage</span>
+                                    <span class="stat-value" id="analysis-damage">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="champion-pool">
+                            <h3>🎯 Champion Pool</h3>
+                            <div class="champion-grid">
+                                <div id="analysis-best-champ" class="champion-card best"></div>
+                                <div id="analysis-worst-champ" class="champion-card worst"></div>
+                            </div>
+                        </div>
+
+                        <div class="graphs-section">
+                            <h3>📊 Performance Graphs</h3>
+                            <div id="graphs-container"></div>
+                        </div>
+
+                        <div class="roast-box">
+                            <h3>🔥 Statistical Roast:</h3>
+                            <p id="analysis-roast"></p>
+                        </div>
+
+                        <div class="roast-box">
+                            <h3>🎯 Champion Report:</h3>
+                            <p id="analysis-report"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>🔥 League Roaster Bot - Get Roasted on Your League Performance 🔥</p>
+            <p style="font-size: 0.9em; margin-top: 10px;">
+                <a href="/api" target="_blank">View REST API Docs</a> | 
+                <a href="https://github.com/Jayesh-2003/Riftrewind" target="_blank">GitHub</a>
+            </p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
