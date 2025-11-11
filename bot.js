@@ -1,11 +1,22 @@
-// bot.js - Main bot entry point
+// bot.js - Main bot entry point with webhook support
 import 'dotenv/config';
+import express from 'express';
 import TelegramBot from 'node-telegram-bot-api';
 import * as db from './db.js';
 import * as handlers from './handlers.js';
 
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const bot = new TelegramBot(TOKEN, { polling: true });
+const WEBHOOK_URL = process.env.WEBHOOK_URL;
+const PORT = process.env.PORT || 3000;
+
+// Determine if we're using webhook or polling
+const useWebhook = WEBHOOK_URL && WEBHOOK_URL.trim().length > 0;
+
+const botOptions = useWebhook
+  ? { webHook: { port: PORT } }
+  : { polling: true };
+
+const bot = new TelegramBot(TOKEN, botOptions);
 
 // Bot setup
 bot.setMyCommands([
@@ -108,5 +119,44 @@ bot.on('error', (error) => {
 bot.on('polling_error', (error) => {
   console.error('🚨 Polling error:', error.message);
 });
+
+// ========== WEBHOOK SETUP ==========
+if (useWebhook) {
+  console.log('🌐 Setting up webhook mode...');
+  
+  // Create Express app for webhook
+  const app = express();
+  app.use(express.json());
+  
+  // Health check endpoint
+  app.get('/', (req, res) => {
+    res.send('✅ League Roaster Bot is running!');
+  });
+  
+  // Webhook endpoint
+  const webhookPath = `/bot${TOKEN}`;
+  app.post(webhookPath, (req, res) => {
+    bot.processUpdate(req.body);
+    res.sendStatus(200);
+  });
+  
+  // Set webhook with Telegram
+  (async () => {
+    try {
+      const webhookUrl = `${WEBHOOK_URL}${webhookPath}`;
+      await bot.setWebHook(webhookUrl);
+      console.log(`✅ Webhook set to: ${webhookUrl}`);
+    } catch (error) {
+      console.error('❌ Failed to set webhook:', error.message);
+    }
+  })();
+  
+  // Start HTTP server
+  app.listen(PORT, () => {
+    console.log(`🚀 Webhook server listening on port ${PORT}`);
+  });
+} else {
+  console.log('📡 Using polling mode (local development)');
+}
 
 console.log('✅ Bot is running and waiting for messages...');
