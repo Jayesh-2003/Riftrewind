@@ -1,0 +1,29 @@
+name: Keep Render Service Alive
+
+on:
+  schedule:
+    # Runs every 5 minutes
+    - cron: '*/1 * * * *'
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Ping Render Service
+        run: |
+          echo "🔄 Pinging backend at $(date)..."
+          response=$(curl -s -o /dev/null -w https://riftrewind.onrender.com)
+          
+          if [ $response -eq 200 ]; then
+            echo "✅ Backend responded with status $response"
+          else
+            echo "❌ Backend responded with status $response"
+            exit 1
+          fi
+        env:
+          BACKEND_URL: ${{ secrets.BACKEND_URL }}
+      
+      - name: Log Success
+        run: echo "✅ Keep-alive ping completed successfully at $(date)"
